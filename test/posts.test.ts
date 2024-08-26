@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from "@jest/globals";
 import axios from "axios";
-import { generateToken } from "../middlewares/auth";
+import { generateToken } from "../backend/server/middlewares/auth";
 /**
  * Default database : Already some dummy posts (2-3)
  */

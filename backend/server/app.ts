@@ -6,25 +6,25 @@ import { IError } from "./types/basic/IError";
 import spotifyRouter from "./routes/spotifyRoutes";
 import postRouter from "./routes/postRouter";
 import { isAuth, testToken } from "./middlewares/auth";
-import { Server } from "socket.io";
+// import { Server } from "socket.io";
 import convoRouter from "./routes/conversationRoutes";
 import userRouter from "./routes/userRoutes";
 import http from "http";
 import { config } from "dotenv";
 import searchRouter from "./routes/searchRoutes";
-import { ioConfig } from "./sockets/ioconfig";
+// import { ioConfig } from "./sockets/ioconfig";
 import userModel from "./models/userSchema";
 import postModel from "./models/postSchema";
-// import morgan from "morgan";
+import morgan from "morgan";
 // import { createAdapter } from "@socket.io/mongo-adapter";
 // import cron from "node-cron";
 config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.SERVER_PORT || 3000;
 const env = process.env.NODE_ENV;
 
-// app.use(morgan("short"));
+app.use(morgan("short"));
 
 // Serve static media folder
 app.use("/media", express.static("media"));
@@ -74,15 +74,16 @@ app.use((error: IError, req: Request, res: Response, next: NextFunction) => {
 
 // Start the server
 const server = http.createServer(app);
-const io = new Server(server, {
-	path: "",
-	cors: {
-		origin: "*",
-		methods: ["GET", "POST", "DELETE", "PATCH", "PUT"],
-		allowedHeaders: ["Authorization"],
-	},
-	cleanupEmptyChildNamespaces: true,
-});
+// const io = new Server(server, {
+// 	path: "",
+// 	cors: {
+// 		origin: "*",
+// 		methods: ["GET", "POST", "DELETE", "PATCH", "PUT"],
+// 		allowedHeaders: ["Authorization"],
+// 	},
+// 	cleanupEmptyChildNamespaces: true,
+// 	transports: ["websocket"],
+// });
 
 const mongoUrl =
 	env == "development"
@@ -90,18 +91,9 @@ const mongoUrl =
 		: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/rewind-test?authSource=admin`;
 
 server.listen(port, async () => {
-	console.log(mongoUrl);
 	mongoose
 		.connect(mongoUrl)
 		.then(() => {
-	// 		// mongoose.connection
-	// 		// 	.collection("socket-io")
-	// 		// 	.createIndex({ expireAfterSeconds: 20 });
-	// 		// io.adapter(
-	// 		// 	createAdapter(mongoose.connection.collection("socket-io"), {
-	// 		// 		addCreatedAtField: true,
-	// 		// 	}),
-	// 		// );
 			console.log("Connected to mongo db");
 		})
 		.catch((err: Error) =>
@@ -109,6 +101,6 @@ server.listen(port, async () => {
 		);
 });
 
-ioConfig(io);
+// ioConfig(io);
 
 export default app;

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "@jest/globals";
-import { generateToken } from "../middlewares/auth";
+import { generateToken } from "../backend/server/middlewares/auth";
 import axios from "axios";
 /**
  * After all : delete the conversation

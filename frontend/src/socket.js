@@ -5,6 +5,7 @@ export const chatSocket = io(import.meta.env.VITE_SOCKET_ENDPOINT + '/chat', {
   extraHeaders: {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
   },
+  transports: ['websocket'],
 })
 
 export const musicSocket = io(import.meta.env.VITE_SOCKET_ENDPOINT + '/music', {

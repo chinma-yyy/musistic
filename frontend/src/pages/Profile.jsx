@@ -21,10 +21,10 @@ function Profile() {
   const fetchUser = useCallback(
     async (username) => {
       try {
-        const response = await sendRequest(`/user?username=${username}`)
-        if (response.user) {
-          setUser(response.user)
-          setTopTrack(response.topTrack)
+        const response = await sendRequest(`/search/user?username=${username}`)
+        if (response) {
+          setUser(response)
+          setTopTrack(response.track)
           setIsMe(response.isMe)
         } else {
           navigate('/404')

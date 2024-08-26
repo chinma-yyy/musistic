@@ -83,9 +83,6 @@ export const pushMessage = async (
 						messages: newMessage._id,
 					},
 				})
-				.then((con) => {
-					// console.log("pushed messages id");
-				});
 			length = 0;
 			messageId = newMessage._id;
 		} else {
@@ -95,10 +92,6 @@ export const pushMessage = async (
 			.findByIdAndUpdate(messageId, {
 				$push: { messages: message },
 			})
-			.then((mess) => {
-				console.log("message pushed");
-			});
-		console.log("message pushed");
 		await conversationModel.findByIdAndUpdate(conversation._id, {
 			$set: {
 				lastMessage: message.message,
@@ -106,7 +99,6 @@ export const pushMessage = async (
 				seen: false,
 			},
 		});
-		console.log(message.userId);
 		return true;
 	} catch (err) {
 		console.log(err);

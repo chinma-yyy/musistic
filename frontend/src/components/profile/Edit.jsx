@@ -39,13 +39,13 @@ function Edit({ user, setEditing, refresh }) {
     setIsLoading(true)
 
     try {
-      let tagline = await fetch(import.meta.env.VITE_AI_ENDPOINT + '/tagline', {
-        headers: {
-          Authorization: 'Bearer ' + user?._id,
-        },
-      })
+      // let tagline = await fetch(import.meta.env.VITE_AI_ENDPOINT + '/tagline', {
+      //   headers: {
+      //     Authorization: 'Bearer ' + user?._id,
+      //   },
+      // })
 
-      tagline = await tagline.json()
+      // tagline = await tagline.json()
       await sendEditReq(
         `/user/update`,
         'POST',
@@ -53,7 +53,7 @@ function Edit({ user, setEditing, refresh }) {
           name,
           username,
           bio,
-          tagline: tagline.tagline,
+          // tagline: tagline.tagline,
         }),
         {
           'Content-Type': 'application/json',

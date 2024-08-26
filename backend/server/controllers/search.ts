@@ -50,6 +50,7 @@ export const userByFields: RequestHandler = async (
 	next,
 ) => {
 	try {
+		console.log(req.query);
 		const username = req.query.username;
 		const userId = req.query.userId;
 		const email = req.query.email;
