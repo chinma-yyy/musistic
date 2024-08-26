@@ -6,11 +6,18 @@ export const chatSocket = io(import.meta.env.VITE_SOCKET_ENDPOINT + '/chat', {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
   },
   transports: ['websocket'],
+  query: {
+    token: localStorage.getItem('token'),
+  },
 })
 
 export const musicSocket = io(import.meta.env.VITE_SOCKET_ENDPOINT + '/music', {
   autoConnect: false,
   extraHeaders: {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
+  },
+  transports: ['websocket'],
+  query: {
+    token: localStorage.getItem('token'),
   },
 })

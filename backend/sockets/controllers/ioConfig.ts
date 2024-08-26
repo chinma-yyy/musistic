@@ -12,7 +12,7 @@ export const ioConfig = (
 	const chatRooms = io.of("/chat");
 	chatRooms.on("connection", (socket: Socket) => {
 		// console.log("Connected to chat room");
-		const token = socket.handshake.headers.authorization?.split(" ")[1];
+		const token = socket.handshake.query.token as string;
 		try {
 			//@ts-ignore
 			const decoded = jwt.verify(token!, process.env.JWT_SECRET!) as {

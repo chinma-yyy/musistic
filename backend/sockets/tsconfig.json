@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"target": "es6",
 		"module": "commonjs",
-		// "rootDir": "./server",
+		// "rootDir": ".",
 		"sourceMap": true,
 		"outDir": "./dist",
 		"removeComments": true,

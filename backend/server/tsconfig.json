@@ -15,6 +15,6 @@
 		"allowUnreachableCode": true,
 		"skipLibCheck": true
 	},
-	"exclude": ["node_modules", "./server/tests","jest.config.ts","sockets"],
-	"include": ["server"]
+	// "exclude": ["node_modules", "./server/tests","jest.config.ts"],
+	// "include": ["server"]
 }

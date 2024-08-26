@@ -5,10 +5,15 @@ import { config } from "dotenv";
 import mongoose from "mongoose";
 import { ioConfig } from "./controllers/ioConfig";
 
+
 config();
+
 const app = express();
-const port = process.env.SOCKET_PORT || 3000;
+const port = process.env.SOCKET_PORT || 3001;
 const env = process.env.NODE_ENV;
+
+app.use(express.json());
+
 
 // Start the server
 const server = http.createServer(app);
@@ -29,6 +34,7 @@ const mongoUrl =
 		: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/rewind-test?authSource=admin`;
 
 server.listen(port, async () => {
+	console.log("Server started on port " + port);
 	mongoose
 		.connect(mongoUrl)
 		.then(() => {

@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
-import conversationModel from "../../server/models/conversationSchema";
-import { pushMessage } from "../../server/services/conversations";
+import conversationModel from "../models/conversationSchema";
+import { pushMessage } from "../services/conversations";
 
 function createTime(): any {
 	const d = new Date();
