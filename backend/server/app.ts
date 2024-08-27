@@ -13,8 +13,6 @@ import http from "http";
 import { config } from "dotenv";
 import searchRouter from "./routes/searchRoutes";
 // import { ioConfig } from "./sockets/ioconfig";
-import userModel from "./models/userSchema";
-import postModel from "./models/postSchema";
 import morgan from "morgan";
 // import { createAdapter } from "@socket.io/mongo-adapter";
 // import cron from "node-cron";
@@ -35,11 +33,9 @@ app.use(cors());
 
 //test route
 app.use("/test", async (req, res, next) => {
-	console.log("aaya");
+	console.log("Here");
 	try {
-		const posts = await postModel.find();
-		const users = await userModel.find();
-		res.status(200).json({ message: "Recieved", users, posts });
+		res.status(200).json({ message: "Recieved"});
 	} catch (e) {
 		res.status(200).json({ message: "Error" });
 	}

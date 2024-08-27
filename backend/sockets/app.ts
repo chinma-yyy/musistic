@@ -5,7 +5,6 @@ import { config } from "dotenv";
 import mongoose from "mongoose";
 import { ioConfig } from "./controllers/ioConfig";
 
-
 config();
 
 const app = express();
@@ -14,6 +13,10 @@ const env = process.env.NODE_ENV;
 
 app.use(express.json());
 
+app.use("/test", (req, res, next) => {
+	console.log("Here");
+	res.status(200).json({ message: "Recieved" });
+});
 
 // Start the server
 const server = http.createServer(app);

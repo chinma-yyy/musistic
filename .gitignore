@@ -1,3 +1,4 @@
 /aws
 node_modules
 coverage
+.env
