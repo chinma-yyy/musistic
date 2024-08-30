@@ -42,7 +42,6 @@ app.use(cors(corsOptions));
 
 //test route
 app.use("/test", async (req, res, next) => {
-	console.log("Here");
 	try {
 		res.status(200).json({ message: "Recieved" });
 	} catch (e) {
@@ -74,6 +73,7 @@ app.use((error: IError, req: Request, res: Response, next: NextFunction) => {
 	if (error.location) {
 		console.error(location);
 	}
+	console.log(error);
 	res.status(error.code || 500).json({ message: error.text });
 });
 
@@ -96,6 +96,7 @@ const mongoUrl =
 		: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/rewind-test?authSource=admin`;
 
 server.listen(port, async () => {
+	console.log("Server started on port " + port);
 	mongoose
 		.connect(mongoUrl)
 		.then(() => {
