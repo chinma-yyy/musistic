@@ -28,14 +28,23 @@ app.use(morgan("short"));
 app.use("/media", express.static("media"));
 //Use body-parser
 app.use(express.json());
+const origin = process.env.FRONTEND_ORIGIN;
+// Configure CORS
+const corsOptions = {
+	origin, // Allow requests from this domain
+	methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allowed HTTP methods
+	credentials: true, // Allow cookies and other credentials
+	optionsSuccessStatus: 200, // For legacy browsers
+};
 
-app.use(cors());
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 //test route
 app.use("/test", async (req, res, next) => {
 	console.log("Here");
 	try {
-		res.status(200).json({ message: "Recieved"});
+		res.status(200).json({ message: "Recieved" });
 	} catch (e) {
 		res.status(200).json({ message: "Error" });
 	}
