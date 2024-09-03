@@ -5,10 +5,13 @@ locals {
     { az = local.availability_zone_2, cidr = var.cidr_block_public_2 },
   ]
 
-  private_subnets = [
+  private_subnets_l1 = [
     { az = local.availability_zone_1, cidr = var.cidr_block_private_1a },
-    { az = local.availability_zone_1, cidr = var.cidr_block_private_1b },
-    { az = local.availability_zone_2, cidr = var.cidr_block_private_2a },
+    { az = local.availability_zone_2, cidr = var.cidr_block_private_1b },
+
+  ]
+  private_subnets_l2 = [
+    { az = local.availability_zone_1, cidr = var.cidr_block_private_2a },
     { az = local.availability_zone_2, cidr = var.cidr_block_private_2b },
   ]
 }

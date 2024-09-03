@@ -3,7 +3,11 @@ variable "region" {
   type = string
   default = "us-east-1"
 }
-
+variable "project" {
+  description = "Name of the project"
+  type = string
+  default = "Rewind"
+}
 
 variable "cidr_block" {
   description = "CIDR block for the main vpc"
