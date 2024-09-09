@@ -23,3 +23,14 @@ variable "template_name" {
   description = "Name of the template"
   type        = string
 }
+
+variable "policy_name" {
+  type        = string
+  description = "name of IAM policy to use by the instacne"
+}
+
+variable "efs_file_system_id" {
+  type        = string
+  description = "EFS system `to be mounted"
+  default = ""
+}

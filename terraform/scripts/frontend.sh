@@ -1,7 +1,7 @@
 #!/bin/bash
 export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update >> /dev/null
-sudo apt-get install -y unzip nginx >> /dev/null
+sudo apt-get install -y unzip nginx jq >> /dev/null
 echo "Packages installed."
 su - ubuntu -c '
 cd ~

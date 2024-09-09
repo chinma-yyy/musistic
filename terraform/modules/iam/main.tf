@@ -89,3 +89,9 @@ resource "aws_iam_role_policy" "ec2_secrets_role_policy" {
     ]
   })
 }
+
+
+resource "aws_iam_instance_profile" "ec2" {
+  name = "secrets_role_ec2"
+  role = aws_iam_role.ec2_secrets_role.name
+}

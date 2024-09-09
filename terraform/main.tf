@@ -113,7 +113,42 @@ module "security_group_alb" {
       cidr_ipv4   = "0.0.0.0/0"
     },
   ]
+  egress_rules = [
+    {
+      description = "Allow all outbound traffic (IPv4)"
+      ip_protocol = "-1" # -1 allows all protocols
+      from_port   = 0
+      to_port     = 0
+      cidr_ipv4   = "0.0.0.0/0" # Allows all traffic to all IPv4 addresses
+    }
+  ]
 }
+module "security_group_mongodb_alb" {
+  source = "./modules/security-groups"
+  vpc_id = module.vpc.vpc_id
+  name   = "ALB for MongoDB Server"
+
+  ingress_rules = [
+    {
+      description = "Allow MongoDB (27017) access"
+      ip_protocol = "tcp"
+      from_port   = 27017
+      to_port     = 27017
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  ]
+
+  egress_rules = [
+    {
+      description = "Allow all outbound traffic (IPv4)"
+      ip_protocol = "-1"
+      from_port   = 0
+      to_port     = 0
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  ]
+}
+
 
 module "security_group_bastion_host" {
   source = "./modules/security-groups"
@@ -162,6 +197,48 @@ module "security_group_servers" {
       to_port                      = 22
     },
   ]
+  egress_rules = [
+    {
+      description = "Allow all outbound traffic (IPv4)"
+      ip_protocol = "-1"
+      from_port   = 0
+      to_port     = 0
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  ]
+}
+
+module "security_group_mongodb" {
+  source = "./modules/security-groups"
+  vpc_id = module.vpc.vpc_id
+  name   = "MongoDB Security Group"
+
+  ingress_rules = [
+    {
+      description = "Allow MongoDB access from trusted IPs"
+      ip_protocol = "tcp"
+      from_port   = 27017
+      to_port     = 27017
+      cidr_ipv4   = var.cidr_block
+    },
+    {
+      description = "Allow EFS access from EC2 instances"
+      ip_protocol = "tcp"
+      from_port   = 2049
+      to_port     = 2049
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  ]
+
+  egress_rules = [
+    {
+      description = "Allow MongoDB outgoing traffic to all instances in the VPC"
+      ip_protocol = "tcp"
+      from_port   = 27017
+      to_port     = 27017
+      cidr_ipv4   = var.cidr_block
+    }
+  ]
 }
 
 module "iam_role" {
@@ -174,6 +251,7 @@ module "launch_template_server" {
   description        = "Template for the rest API server"
   user_data          = "scripts/server.sh"
   security_group_ids = [module.security_group_servers.security_group_id]
+  policy_name        = module.iam_role.policy_name
 }
 
 module "launch_template_socket" {
@@ -182,6 +260,7 @@ module "launch_template_socket" {
   description        = "Template for the rest socket server"
   user_data          = "scripts/socket.sh"
   security_group_ids = [module.security_group_servers.security_group_id]
+  policy_name        = module.iam_role.policy_name
 }
 
 module "launch_template_frontend" {
@@ -190,6 +269,188 @@ module "launch_template_frontend" {
   description        = "Template for the frontend of the app"
   user_data          = "scripts/frontend.sh"
   security_group_ids = [module.security_group_servers.security_group_id]
+  policy_name        = module.iam_role.policy_name
+}
+
+resource "aws_efs_file_system" "mongodb_efs" {
+  tags = {
+    Name = "${var.project}-mongo-efs"
+  }
+}
+
+module "launch_template_mongodb" {
+  source             = "./modules/launch-templates"
+  template_name      = "MongoDB template"
+  description        = "Template for the mongodb servers"
+  user_data          = "scripts/mongo.sh"
+  security_group_ids = [module.security_group_mongodb.security_group_id]
+  policy_name        = module.iam_role.policy_name
+  efs_file_system_id = aws_efs_file_system.mongodb_efs.id
+}
+
+# resource "aws_elasticache_subnet_group" "redis_subnets" {
+#   name       = "redis-subnets"
+#   subnet_ids = module.private_subnets_L2.subnet_ids
+
+#   tags = {
+#     Name = "Redis-subnets"
+#   }
+# }
+
+# resource "aws_elasticache_cluster" "redis" {
+#   cluster_id      = "redis-rewind"
+#   node_type       = "cache.t3.micro"
+#   num_cache_nodes = 1
+#   engine          = "redis"
+
+#   subnet_group_name = aws_elasticache_subnet_group.redis_subnets.name
+# }
+
+module "alb_server" {
+  source             = "./modules/alb"
+  name               = "server"
+  vpc_id             = module.vpc.vpc_id
+  launch_template_id = module.launch_template_server.template_id
+  private            = false
+  availability_zones = [local.availability_zone_1, local.availability_zone_2]
+  security_groups    = [module.security_group_alb.security_group_id]
+  subnets            = module.public_subnets.subnet_ids
+}
+
+resource "aws_autoscaling_group" "asg" {
+  name             = "socket"
+  min_size         = 1
+  max_size         = 2
+  desired_capacity = 1
+
+  launch_template {
+    id = module.launch_template_socket.template_id
+  }
+  vpc_zone_identifier = module.public_subnets.subnet_ids
+
+  target_group_arns = [aws_lb_target_group.socket_tg.arn]
+}
+
+resource "aws_lb_target_group" "socket_tg" {
+  name     = "socket"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+}
+
+resource "aws_lb_listener_rule" "rule" {
+  listener_arn = module.alb_server.listener_arn
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.socket_tg.arn
+  }
+  condition {
+    path_pattern {
+      values = ["/socket.io*"]
+    }
+  }
+}
+
+module "alb_frontend" {
+  source             = "./modules/alb"
+  name               = "frontend"
+  vpc_id             = module.vpc.vpc_id
+  launch_template_id = module.launch_template_frontend.template_id
+  private            = false
+  availability_zones = [local.availability_zone_1, local.availability_zone_2]
+  security_groups    = [module.security_group_alb.security_group_id]
+  subnets            = module.public_subnets.subnet_ids
+}
+
+module "nlb_mongodb" {
+  source             = "./modules/alb"
+  name               = "mongodb"
+  vpc_id             = module.vpc.vpc_id
+  launch_template_id = module.launch_template_mongodb.template_id
+  private            = true
+  subnets            = module.private_subnets_L1.subnet_ids
+  availability_zones = [local.availability_zone_1, local.availability_zone_2]
+  security_groups    = [module.security_group_mongodb_alb.security_group_id]
+  port               = 27017
+  protocol           = "TCP"
+  load_balancer_type = "network"
+}
+
+data "aws_route53_zone" "chinmayyy" {
+  name = "chinmayyy.me."
+}
+
+resource "aws_route53_record" "frontend" {
+  name    = "rewind.chinmayyy.me"
+  zone_id = data.aws_route53_zone.chinmayyy.id
+  type    = "A"
+  alias {
+    name                   = module.alb_frontend.dns_name
+    zone_id                = module.alb_frontend.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "backend" {
+  name    = "backend.chinmayyy.me"
+  zone_id = data.aws_route53_zone.chinmayyy.id
+  type    = "A"
+  alias {
+    name                   = module.alb_server.dns_name
+    zone_id                = module.alb_server.zone_id
+    evaluate_target_health = true
+  }
+}
+
+data "aws_ami" "ubuntu_ami" {
+  most_recent = true
+
+  filter {
+    name   = "image-id"
+    values = ["ami-0a0e5d9c7acc336f1"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+resource "aws_instance" "baston_host" {
+  instance_type               = "t2.micro"
+  ami                         = data.aws_ami.ubuntu_ami.id
+  associate_public_ip_address = true
+  availability_zone           = local.availability_zone_1
+  security_groups             = [module.security_group_bastion_host.security_group_id]
+  key_name                    = "test"
+  subnet_id                   = module.public_subnets.subnet_ids[0]
+  tags = {
+    Name = "bastion host for all the vpc instances"
+  }
+
+  provisioner "file" {
+    source      = "${path.root}/test.pem"
+    destination = "/home/ubuntu/test.pem"
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("${path.root}/test.pem") # Path to your SSH private key
+      host        = self.public_ip
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod 400 /home/ubuntu/test.pem"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("${path.root}/test.pem") # Path to your SSH private key
+      host        = self.public_ip
+    }
+  }
 }
 
 
