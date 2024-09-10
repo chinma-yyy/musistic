@@ -5,31 +5,29 @@ import cors from "cors";
 import { IError } from "./types/basic/IError";
 import spotifyRouter from "./routes/spotifyRoutes";
 import postRouter from "./routes/postRouter";
-import { isAuth, testToken } from "./middlewares/auth";
-// import { Server } from "socket.io";
 import convoRouter from "./routes/conversationRoutes";
 import userRouter from "./routes/userRoutes";
 import http from "http";
 import { config } from "dotenv";
 import searchRouter from "./routes/searchRoutes";
-// import { ioConfig } from "./sockets/ioconfig";
 import morgan from "morgan";
-// import { createAdapter } from "@socket.io/mongo-adapter";
-// import cron from "node-cron";
-config();
+
+config({ debug: false });
 
 const app = express();
-const port = process.env.SERVER_PORT || 3000;
+const port = process.env.SERVER_PORT || 5000;
 const env = process.env.NODE_ENV;
 
 app.use(morgan("short"));
 
 // Serve static media folder
 app.use("/media", express.static("media"));
+
 //Use body-parser
 app.use(express.json());
-const origin = process.env.FRONTEND_ORIGIN;
+
 // Configure CORS
+const origin = process.env.FRONTEND_ORIGIN;
 const corsOptions = {
 	origin, // Allow requests from this domain
 	methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allowed HTTP methods
@@ -49,9 +47,6 @@ app.use("/test", async (req, res, next) => {
 	}
 });
 
-// Call to get token and check auth
-app.get("/ping", isAuth);
-app.post("/ping", testToken);
 
 // Post routes
 app.use("/posts", postRouter);
@@ -77,24 +72,14 @@ app.use((error: IError, req: Request, res: Response, next: NextFunction) => {
 	res.status(error.code || 500).json({ message: error.text });
 });
 
-// Start the server
 const server = http.createServer(app);
-// const io = new Server(server, {
-// 	path: "",
-// 	cors: {
-// 		origin: "*",
-// 		methods: ["GET", "POST", "DELETE", "PATCH", "PUT"],
-// 		allowedHeaders: ["Authorization"],
-// 	},
-// 	cleanupEmptyChildNamespaces: true,
-// 	transports: ["websocket"],
-// });
 
 const mongoUrl =
 	env == "development"
 		? process.env.MONGO_URL!
 		: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/rewind-test?authSource=admin`;
 
+		
 server.listen(port, async () => {
 	console.log("Server started on port " + port);
 	mongoose
@@ -106,7 +91,5 @@ server.listen(port, async () => {
 			console.log("Couldn't connect to mongodb :" + err),
 		);
 });
-
-// ioConfig(io);
 
 export default app;

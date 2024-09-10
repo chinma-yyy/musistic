@@ -5,9 +5,9 @@ import userArrayModel from "../models/userArraySchema";
 import { IError } from "../types/basic/IError";
 import { sendNotification } from "../services/notifications";
 import { NotificationTypes } from "../enums/notificationEnums";
-import notificationModel from "../models/notificationSchema";
 import conversationModel from "../models/conversationSchema";
 import { Authenticated } from "../types/declarations/jwt";
+import client from "../redis";
 
 export const updateUser: RequestHandler = async (
 	req: Authenticated,
@@ -183,20 +183,8 @@ export const getMe: RequestHandler = async (req: Authenticated, res, next) => {
 			.findById(userId)
 			.populate("spotifyData")
 			.populate("lastNotif");
-		let createdAt;
-		if (user?.lastNotif) {
-			//@ts-ignore
-			createdAt = user.lastNotif.createdAt;
-		} else {
-			//@ts-ignore
-			createdAt = user?.createdAt;
-		}
-		const notificationCount = await notificationModel
-			.find({
-				createdAt: { $gt: createdAt },
-				recipient: user?._id,
-			})
-			.count();
+		const notificationKey = `notification:unseen:${userId}`
+		const notificationCount = await client.lLen(notificationKey);
 		const messageCount = await conversationModel
 			.find({ by: { $ne: user?._id }, seen: false })
 			.count();
