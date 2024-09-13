@@ -16,7 +16,6 @@ config({ debug: false });
 
 const app = express();
 const port = process.env.SERVER_PORT || 5000;
-const env = process.env.NODE_ENV;
 
 app.use(morgan("short"));
 
@@ -47,7 +46,6 @@ app.use("/test", async (req, res, next) => {
 	}
 });
 
-
 // Post routes
 app.use("/posts", postRouter);
 
@@ -74,12 +72,8 @@ app.use((error: IError, req: Request, res: Response, next: NextFunction) => {
 
 const server = http.createServer(app);
 
-const mongoUrl =
-	env == "development"
-		? process.env.MONGO_URL!
-		: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/rewind-test?authSource=admin`;
+const mongoUrl = process.env.MONGO_URL!;
 
-		
 server.listen(port, async () => {
 	console.log("Server started on port " + port);
 	mongoose

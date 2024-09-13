@@ -17,13 +17,13 @@ app.use("/test", (req, res, next) => {
 	console.log("Here");
 	res.status(200).json({ message: "Recieved" });
 });
+const origin = process.env.FRONTEND_ORIGIN;
 
 // Start the server
 const server = http.createServer(app);
 const io = new Server(server, {
-	path: "",
 	cors: {
-		origin: "*",
+		origin,
 		methods: ["GET", "POST", "DELETE", "PATCH", "PUT"],
 		allowedHeaders: ["Authorization"],
 	},
