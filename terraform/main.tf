@@ -1,53 +1,53 @@
-data "aws_elb_service_account" "main" {
-  region = var.region
-}
+# data "aws_elb_service_account" "main" {
+#   region = var.region
+# }
 
-resource "aws_s3_bucket" "elb_logs" {
-  bucket = "logs-rewind"
-}
+# resource "aws_s3_bucket" "elb_logs" {
+#   bucket = "logs-rewind"
+# }
 
 # resource "aws_s3_bucket_acl" "elb_logs_acl" {
 #   bucket = aws_s3_bucket.elb_logs.id
 #   acl    = "private"
 # }
 
-data "aws_iam_policy_document" "allow_elb_logging" {
-  statement {
-    effect = "Allow"
+# data "aws_iam_policy_document" "allow_elb_logging" {
+#   statement {
+#     effect = "Allow"
 
-    principals {
-      type        = "AWS"
-      identifiers = [data.aws_elb_service_account.main.arn]
-    }
+#     principals {
+#       type        = "AWS"
+#       identifiers = [data.aws_elb_service_account.main.arn]
+#     }
 
-    actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.elb_logs.arn}/*"]
-  }
-}
-
-resource "aws_s3_bucket_policy" "allow_elb_logging" {
-  bucket = aws_s3_bucket.elb_logs.id
-  policy = data.aws_iam_policy_document.allow_elb_logging.json
-}
-
-
-# resource "aws_elasticache_subnet_group" "redis_subnets" {
-#   name       = "redis-subnets"
-#   subnet_ids = module.private_subnets_L2.subnet_ids
-
-#   tags = {
-#     Name = "Redis-subnets"
+#     actions   = ["s3:PutObject"]
+#     resources = ["${aws_s3_bucket.elb_logs.arn}/*"]
 #   }
 # }
 
-# resource "aws_elasticache_cluster" "redis" {
-#   cluster_id      = "redis-rewind"
-#   node_type       = "cache.t3.micro"
-#   num_cache_nodes = 1
-#   engine          = "redis"
-
-#   subnet_group_name = aws_elasticache_subnet_group.redis_subnets.name
+# resource "aws_s3_bucket_policy" "allow_elb_logging" {
+#   bucket = aws_s3_bucket.elb_logs.id
+#   policy = data.aws_iam_policy_document.allow_elb_logging.json
 # }
+
+
+resource "aws_elasticache_subnet_group" "redis_subnets" {
+  name       = "redis-subnets"
+  subnet_ids = module.private_subnets_L2.subnet_ids
+
+  tags = {
+    Name = "Redis-subnets"
+  }
+}
+
+resource "aws_elasticache_cluster" "redis" {
+  cluster_id      = "redis-rewind"
+  node_type       = "cache.t3.micro"
+  num_cache_nodes = 1
+  engine          = "redis"
+
+  subnet_group_name = aws_elasticache_subnet_group.redis_subnets.name
+}
 
 module "vpc" {
   source     = "./modules/vpc"
@@ -564,7 +564,7 @@ resource "aws_secretsmanager_secret_version" "socket_secret_update" {
       }
     )
   )
-  # depends_on = [module.nlb_mongodb]
+  depends_on = [module.nlb_mongodb]
 }
 
 resource "aws_secretsmanager_secret_version" "server_secret_update" {
@@ -573,15 +573,15 @@ resource "aws_secretsmanager_secret_version" "server_secret_update" {
     merge(
       jsondecode(data.aws_secretsmanager_secret_version.existing_server_secret.secret_string),
       {
-        MONGO_URL = "mongodb://admin:Password@123@${module.nlb_mongodb.dns_name}:27017/",
-        # REDIS_HOST  = "${aws_elasticache_cluster.redis.cache_nodes[0].address}",
-        # REDIS_PORT  = "${aws_elasticache_cluster.redis.cache_nodes[0].port}",
-        REDIS_TLS = "true"
+        MONGO_URL  = "mongodb://admin:Password%40123@${module.nlb_mongodb.dns_name}:27017/",
+        REDIS_HOST = "${aws_elasticache_cluster.redis.cache_nodes[0].address}",
+        REDIS_PORT = "${aws_elasticache_cluster.redis.cache_nodes[0].port}",
+        REDIS_TLS  = "true"
       }
     )
   )
 
-  # depends_on = [aws_elasticache_cluster.redis, module.nlb_mongodb]
+  depends_on = [aws_elasticache_cluster.redis, module.nlb_mongodb]
 }
 
 resource "aws_cloudfront_distribution" "frontend_cloudfront" {
