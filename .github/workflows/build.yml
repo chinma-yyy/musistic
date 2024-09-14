@@ -50,12 +50,12 @@ jobs:
         run: tsc
 
       - name: Install dependencies Frontend
-        working-directory: frontend
+        working-directory: frontend/
         run: |
           npm install -g yarn
           yarn
       - name: Build Frontend
-        working-directory: backend/server
+        working-directory: frontend/
         run: yarn build
 
       # Final status message

@@ -53,7 +53,7 @@ jobs:
       # Check for ESLint errors
       - name: Run ESLint
         working-directory: backend/server
-        run: npx eslint . --ext .ts,.tsx
+        run: npx eslint . 
 
       # Final status message
       - name: ESLint Complete
