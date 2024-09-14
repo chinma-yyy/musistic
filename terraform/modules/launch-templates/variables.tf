@@ -32,5 +32,11 @@ variable "policy_name" {
 variable "efs_file_system_id" {
   type        = string
   description = "EFS system `to be mounted"
-  default = ""
+  default     = ""
+}
+
+variable "instance_type" {
+  type        = string
+  default     = "t2.micro"
+  description = "Instance type for the launch template"
 }

@@ -292,16 +292,23 @@ module "security_group_mongodb" {
       from_port   = 2049
       to_port     = 2049
       cidr_ipv4   = "0.0.0.0/0"
-    }
+    },
+    {
+      description                  = "Allow SSH from Bastion Host"
+      referenced_security_group_id = module.security_group_bastion_host.security_group_id
+      ip_protocol                  = "tcp"
+      from_port                    = 22
+      to_port                      = 22
+    },
   ]
 
   egress_rules = [
     {
-      description = "Allow MongoDB outgoing traffic to all instances in the VPC"
-      ip_protocol = "tcp"
-      from_port   = 27017
-      to_port     = 27017
-      cidr_ipv4   = var.cidr_block
+      description = "Allow all outbound traffic (IPv4)"
+      ip_protocol = "-1"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "0.0.0.0/0"
     }
   ]
 }
@@ -317,6 +324,7 @@ module "launch_template_server" {
   user_data          = "scripts/server.sh"
   security_group_ids = [module.security_group_servers.security_group_id]
   policy_name        = module.iam_role.policy_name
+  instance_type      = "t3.small"
 }
 
 module "launch_template_socket" {
@@ -586,7 +594,7 @@ resource "aws_secretsmanager_secret_version" "server_secret_update" {
 
 resource "aws_cloudfront_distribution" "frontend_cloudfront" {
   enabled = true
-
+  aliases = ["rewind.chinmayyy.me"]
   origin {
     domain_name = module.alb_frontend.dns_name
     origin_id   = "rewind_frontend"

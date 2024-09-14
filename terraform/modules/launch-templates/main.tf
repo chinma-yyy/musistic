@@ -14,7 +14,7 @@ data "aws_ami" "ubuntu_ami" {
 
 resource "aws_launch_template" "ec2_servers" {
   description   = var.description
-  instance_type = "t2.micro"
+  instance_type = var.instance_type
   image_id      = data.aws_ami.ubuntu_ami.id
 
 
