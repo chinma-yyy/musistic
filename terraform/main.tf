@@ -1,34 +1,34 @@
-# data "aws_elb_service_account" "main" {
-#   region = var.region
-# }
+data "aws_elb_service_account" "main" {
+  region = var.region
+}
 
-# resource "aws_s3_bucket" "elb_logs" {
-#   bucket = "logs-rewind"
-# }
+resource "aws_s3_bucket" "elb_logs" {
+  bucket = "logs-rewind"
+}
 
 # resource "aws_s3_bucket_acl" "elb_logs_acl" {
 #   bucket = aws_s3_bucket.elb_logs.id
 #   acl    = "private"
 # }
 
-# data "aws_iam_policy_document" "allow_elb_logging" {
-#   statement {
-#     effect = "Allow"
+data "aws_iam_policy_document" "allow_elb_logging" {
+  statement {
+    effect = "Allow"
 
-#     principals {
-#       type        = "AWS"
-#       identifiers = [data.aws_elb_service_account.main.arn]
-#     }
+    principals {
+      type        = "AWS"
+      identifiers = [data.aws_elb_service_account.main.arn]
+    }
 
-#     actions   = ["s3:PutObject"]
-#     resources = ["${aws_s3_bucket.elb_logs.arn}/*"]
-#   }
-# }
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.elb_logs.arn}/*"]
+  }
+}
 
-# resource "aws_s3_bucket_policy" "allow_elb_logging" {
-#   bucket = aws_s3_bucket.elb_logs.id
-#   policy = data.aws_iam_policy_document.allow_elb_logging.json
-# }
+resource "aws_s3_bucket_policy" "allow_elb_logging" {
+  bucket = aws_s3_bucket.elb_logs.id
+  policy = data.aws_iam_policy_document.allow_elb_logging.json
+}
 
 
 resource "aws_elasticache_subnet_group" "redis_subnets" {

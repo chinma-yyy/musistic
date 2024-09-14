@@ -1,4 +1,4 @@
-name: Build
+name: ESLint
 
 on:
   push:
@@ -6,58 +6,55 @@ on:
       - dev
 
 jobs:
-  Build:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       # Display context information for debugging
-      - name: Show GitHub Event Info
+      - name: Display Context Info
         run: |
           echo "🎉 The job was triggered by a ${{ github.event_name }} event."
           echo "🐧 Running on ${{ runner.os }} server hosted by GitHub!"
           echo "🔎 Branch: ${{ github.ref }} | Repository: ${{ github.repository }}"
 
       # Check out repository code
-      - name: Check out repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1 # Only fetch the latest commit to reduce build time
 
       # Set up Node.js environment
-      - name: Set up Node.js 18.x
+      - name: Set Up Node.js 18.x
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
       # Cache npm dependencies to speed up future builds
-      - name: Cache Node.js dependencies
+      - name: Cache Node.js Modules
         uses: actions/cache@v3
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # Install dependencies and build
-      - name: Install dependencies Backend
+      # Install dependencies
+      - name: Install Dependencies
         working-directory: backend/server
-        run: |
-          npm ci
-          npm install -g typescript
+        run: npm ci
 
-      - name: Build Backend
+      # Compile TypeScript
+      - name: Compile TypeScript
         working-directory: backend/server
-        run: tsc
+        run: npx tsc
 
-      - name: Install dependencies Frontend
-        working-directory: frontend
-        run: |
-          npm install -g yarn
-          yarn
-      - name: Build Frontend
+      # Check for ESLint errors
+      - name: Run ESLint
         working-directory: backend/server
-        run: yarn build
+        run: npx eslint . --ext .ts,.tsx
 
       # Final status message
-      - name: Build Complete
-        run: echo "✅ Build completed successfully!"
+      - name: ESLint Complete
+        run: echo "✅ ESLint testing completed successfully!"
