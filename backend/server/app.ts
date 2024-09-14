@@ -19,6 +19,7 @@ const port = process.env.SERVER_PORT || 5000;
 
 app.use(morgan("short"));
 
+app.set("trust proxy", true);
 // Serve static media folder
 app.use("/media", express.static("media"));
 

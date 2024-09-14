@@ -13,6 +13,8 @@ const env = process.env.NODE_ENV;
 
 app.use(express.json());
 
+app.set("trust proxy", true);
+
 app.use("/test", (req, res, next) => {
 	console.log("Here");
 	res.status(200).json({ message: "Recieved" });

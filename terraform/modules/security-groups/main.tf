@@ -20,6 +20,10 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_rules" {
   cidr_ipv6                    = var.ingress_rules[count.index].cidr_ipv6 != "" ? var.ingress_rules[count.index].cidr_ipv6 : null
   referenced_security_group_id = var.ingress_rules[count.index].referenced_security_group_id != "" ? var.ingress_rules[count.index].referenced_security_group_id : null
   tags                         = var.ingress_rules[count.index].tags
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 # Create egress rules
@@ -35,4 +39,8 @@ resource "aws_vpc_security_group_egress_rule" "egress_rules" {
   cidr_ipv6                    = var.egress_rules[count.index].cidr_ipv6 != "" ? var.egress_rules[count.index].cidr_ipv6 : null
   referenced_security_group_id = var.egress_rules[count.index].referenced_security_group_id != "" ? var.egress_rules[count.index].referenced_security_group_id : null
   tags                         = var.egress_rules[count.index].tags
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }

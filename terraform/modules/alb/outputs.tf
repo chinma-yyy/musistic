@@ -3,8 +3,9 @@ output "tg_arn" {
 }
 
 output "listener_arn" {
-  value = aws_lb_listener.listener.arn
+  value = var.protocol == "HTTPS" ? aws_lb_listener.https_listener[0].arn : aws_lb_listener.listener[0].arn
 }
+
 
 output "dns_name" {
   value = aws_lb.alb.dns_name

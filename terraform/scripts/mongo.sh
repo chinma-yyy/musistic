@@ -21,7 +21,7 @@ sudo systemctl status mongod
 sudo systemctl enable mongod
 MONGO_CONF="/etc/mongod.conf"
 MONGO_ADMIN_USER="admin"
-MONGO_ADMIN_PASS="securePassword123!" 
+MONGO_ADMIN_PASS="Password@123" 
 TRUSTED_IP="0.0.0.0/0" 
 echo "Configuring MongoDB to listen on all IPs..."
 sudo sed -i "s/^  bindIp:.*/  bindIp: 0.0.0.0/" $MONGO_CONF

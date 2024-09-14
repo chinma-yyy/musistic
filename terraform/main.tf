@@ -1,3 +1,54 @@
+data "aws_elb_service_account" "main" {
+  region = var.region
+}
+
+resource "aws_s3_bucket" "elb_logs" {
+  bucket = "logs-rewind"
+}
+
+# resource "aws_s3_bucket_acl" "elb_logs_acl" {
+#   bucket = aws_s3_bucket.elb_logs.id
+#   acl    = "private"
+# }
+
+data "aws_iam_policy_document" "allow_elb_logging" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = [data.aws_elb_service_account.main.arn]
+    }
+
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.elb_logs.arn}/*"]
+  }
+}
+
+resource "aws_s3_bucket_policy" "allow_elb_logging" {
+  bucket = aws_s3_bucket.elb_logs.id
+  policy = data.aws_iam_policy_document.allow_elb_logging.json
+}
+
+
+# resource "aws_elasticache_subnet_group" "redis_subnets" {
+#   name       = "redis-subnets"
+#   subnet_ids = module.private_subnets_L2.subnet_ids
+
+#   tags = {
+#     Name = "Redis-subnets"
+#   }
+# }
+
+# resource "aws_elasticache_cluster" "redis" {
+#   cluster_id      = "redis-rewind"
+#   node_type       = "cache.t3.micro"
+#   num_cache_nodes = 1
+#   engine          = "redis"
+
+#   subnet_group_name = aws_elasticache_subnet_group.redis_subnets.name
+# }
+
 module "vpc" {
   source     = "./modules/vpc"
   cidr_block = var.cidr_block
@@ -106,6 +157,13 @@ module "security_group_alb" {
 
   ingress_rules = [
     {
+      description = "Allow HTTPS"
+      ip_protocol = "tcp"
+      from_port   = 443
+      to_port     = 443
+      cidr_ipv4   = "0.0.0.0/0"
+    },
+    {
       description = "Allow HTTP"
       ip_protocol = "tcp"
       from_port   = 80
@@ -117,12 +175,13 @@ module "security_group_alb" {
     {
       description = "Allow all outbound traffic (IPv4)"
       ip_protocol = "-1" # -1 allows all protocols
-      from_port   = 0
-      to_port     = 0
+      from_port   = -1
+      to_port     = -1
       cidr_ipv4   = "0.0.0.0/0" # Allows all traffic to all IPv4 addresses
     }
   ]
 }
+
 module "security_group_mongodb_alb" {
   source = "./modules/security-groups"
   vpc_id = module.vpc.vpc_id
@@ -142,13 +201,12 @@ module "security_group_mongodb_alb" {
     {
       description = "Allow all outbound traffic (IPv4)"
       ip_protocol = "-1"
-      from_port   = 0
-      to_port     = 0
+      from_port   = -1
+      to_port     = -1
       cidr_ipv4   = "0.0.0.0/0"
     }
   ]
 }
-
 
 module "security_group_bastion_host" {
   source = "./modules/security-groups"
@@ -196,13 +254,20 @@ module "security_group_servers" {
       from_port                    = 22
       to_port                      = 22
     },
+    # {
+    #   description = "Allow Redis traffic"
+    #   cidr_ipv4   = "0.0.0.0/0"
+    #   ip_protocol = "tcp"
+    #   from_port   = aws_elasticache_cluster.redis.cache_nodes[0].port
+    #   to_port     = aws_elasticache_cluster.redis.cache_nodes[0].port
+    # }
   ]
   egress_rules = [
     {
       description = "Allow all outbound traffic (IPv4)"
       ip_protocol = "-1"
-      from_port   = 0
-      to_port     = 0
+      from_port   = -1
+      to_port     = -1
       cidr_ipv4   = "0.0.0.0/0"
     }
   ]
@@ -288,23 +353,9 @@ module "launch_template_mongodb" {
   efs_file_system_id = aws_efs_file_system.mongodb_efs.id
 }
 
-# resource "aws_elasticache_subnet_group" "redis_subnets" {
-#   name       = "redis-subnets"
-#   subnet_ids = module.private_subnets_L2.subnet_ids
-
-#   tags = {
-#     Name = "Redis-subnets"
-#   }
-# }
-
-# resource "aws_elasticache_cluster" "redis" {
-#   cluster_id      = "redis-rewind"
-#   node_type       = "cache.t3.micro"
-#   num_cache_nodes = 1
-#   engine          = "redis"
-
-#   subnet_group_name = aws_elasticache_subnet_group.redis_subnets.name
-# }
+data "aws_acm_certificate" "ssl_certficate" {
+  domain = "*.chinmayyy.me"
+}
 
 module "alb_server" {
   source             = "./modules/alb"
@@ -315,6 +366,19 @@ module "alb_server" {
   availability_zones = [local.availability_zone_1, local.availability_zone_2]
   security_groups    = [module.security_group_alb.security_group_id]
   subnets            = module.public_subnets.subnet_ids
+  instances_subnets  = module.private_subnets_L1.subnet_ids
+  port               = 443
+  protocol           = "HTTPS"
+  certificate_arn    = data.aws_acm_certificate.ssl_certficate.arn
+  path               = "/test"
+  port_tg            = 80
+  protocol_tg        = "HTTP"
+  bucket_id          = aws_s3_bucket.elb_logs.id
+  bucket_prefix      = "server"
+  depends_on = [aws_secretsmanager_secret_version.server_secret_update,
+    aws_secretsmanager_secret_version.socket_secret_update,
+    data.aws_acm_certificate.ssl_certficate,
+  aws_s3_bucket_policy.allow_elb_logging]
 }
 
 resource "aws_autoscaling_group" "asg" {
@@ -326,9 +390,10 @@ resource "aws_autoscaling_group" "asg" {
   launch_template {
     id = module.launch_template_socket.template_id
   }
-  vpc_zone_identifier = module.public_subnets.subnet_ids
+  vpc_zone_identifier = module.private_subnets_L1.subnet_ids
 
   target_group_arns = [aws_lb_target_group.socket_tg.arn]
+  depends_on        = [module.nat_gateway.nat_id]
 }
 
 resource "aws_lb_target_group" "socket_tg" {
@@ -336,6 +401,9 @@ resource "aws_lb_target_group" "socket_tg" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = module.vpc.vpc_id
+  health_check {
+    path = "/test"
+  }
 }
 
 resource "aws_lb_listener_rule" "rule" {
@@ -360,6 +428,12 @@ module "alb_frontend" {
   availability_zones = [local.availability_zone_1, local.availability_zone_2]
   security_groups    = [module.security_group_alb.security_group_id]
   subnets            = module.public_subnets.subnet_ids
+  instances_subnets  = module.private_subnets_L1.subnet_ids
+  port_tg            = 80
+  protocol_tg        = "HTTP"
+  bucket_id          = aws_s3_bucket.elb_logs.id
+  bucket_prefix      = "frontend"
+  depends_on         = [module.nat_gateway.nat_id, aws_s3_bucket_policy.allow_elb_logging]
 }
 
 module "nlb_mongodb" {
@@ -374,6 +448,12 @@ module "nlb_mongodb" {
   port               = 27017
   protocol           = "TCP"
   load_balancer_type = "network"
+  port_tg            = 27017
+  protocol_tg        = "TCP"
+  bucket_id          = aws_s3_bucket.elb_logs.id
+  bucket_prefix      = "mongodb"
+  instances_subnets  = module.private_subnets_L2.subnet_ids
+  depends_on         = [aws_s3_bucket_policy.allow_elb_logging]
 }
 
 data "aws_route53_zone" "chinmayyy" {
@@ -385,8 +465,8 @@ resource "aws_route53_record" "frontend" {
   zone_id = data.aws_route53_zone.chinmayyy.id
   type    = "A"
   alias {
-    name                   = module.alb_frontend.dns_name
-    zone_id                = module.alb_frontend.zone_id
+    name                   = aws_cloudfront_distribution.frontend_cloudfront.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend_cloudfront.hosted_zone_id
     evaluate_target_health = true
   }
 }
@@ -434,7 +514,7 @@ resource "aws_instance" "baston_host" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("${path.root}/test.pem") # Path to your SSH private key
+      private_key = file("${path.root}/test.pem")
       host        = self.public_ip
     }
   }
@@ -447,11 +527,110 @@ resource "aws_instance" "baston_host" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("${path.root}/test.pem") # Path to your SSH private key
+      private_key = file("${path.root}/test.pem")
       host        = self.public_ip
     }
   }
+  lifecycle {
+    ignore_changes = [
+      security_groups
+    ]
+  }
 }
 
+data "aws_secretsmanager_secret" "socket_secret" {
+  name = "rewind/backend/sockets"
+}
+
+data "aws_secretsmanager_secret" "server_secret" {
+  name = "rewind/backend/server"
+}
+
+data "aws_secretsmanager_secret_version" "existing_server_secret" {
+  secret_id = data.aws_secretsmanager_secret.server_secret.id
+}
+
+data "aws_secretsmanager_secret_version" "existing_socket_secret" {
+  secret_id = data.aws_secretsmanager_secret.socket_secret.id
+}
+
+resource "aws_secretsmanager_secret_version" "socket_secret_update" {
+  secret_id = data.aws_secretsmanager_secret.socket_secret.id
+  secret_string = jsonencode(
+    merge(
+      jsondecode(data.aws_secretsmanager_secret_version.existing_socket_secret.secret_string),
+      {
+        MONGODB_URL = "mongodb://admin:Password@123@${module.nlb_mongodb.dns_name}:27017/"
+      }
+    )
+  )
+  # depends_on = [module.nlb_mongodb]
+}
+
+resource "aws_secretsmanager_secret_version" "server_secret_update" {
+  secret_id = data.aws_secretsmanager_secret.server_secret.id
+  secret_string = jsonencode(
+    merge(
+      jsondecode(data.aws_secretsmanager_secret_version.existing_server_secret.secret_string),
+      {
+        MONGO_URL = "mongodb://admin:Password@123@${module.nlb_mongodb.dns_name}:27017/",
+        # REDIS_HOST  = "${aws_elasticache_cluster.redis.cache_nodes[0].address}",
+        # REDIS_PORT  = "${aws_elasticache_cluster.redis.cache_nodes[0].port}",
+        REDIS_TLS = "true"
+      }
+    )
+  )
+
+  # depends_on = [aws_elasticache_cluster.redis, module.nlb_mongodb]
+}
+
+resource "aws_cloudfront_distribution" "frontend_cloudfront" {
+  enabled = true
+
+  origin {
+    domain_name = module.alb_frontend.dns_name
+    origin_id   = "rewind_frontend"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn = data.aws_acm_certificate.ssl_certficate.arn
+    ssl_support_method  = "sni-only"
+
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "whitelist"
+      locations        = ["IN"]
+    }
+  }
+
+  default_cache_behavior {
+    target_origin_id       = "rewind_frontend"
+    viewer_protocol_policy = "redirect-to-https"
+
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    cached_methods  = ["GET", "HEAD"]
+    min_ttl         = 0
+    default_ttl     = 3600  # Cache duration (1 hour)
+    max_ttl         = 86400 # Maximum cache duration (1 day)
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  price_class = "PriceClass_100" # Adjust based on your needs (PriceClass_100 is the cheapest)
+}
 
 

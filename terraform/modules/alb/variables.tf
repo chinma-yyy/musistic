@@ -50,3 +50,44 @@ variable "security_groups" {
   type        = list(string)
   description = "Security groups for the lb"
 }
+
+variable "instances_subnets" {
+  type        = list(string)
+  description = "Subnets of the instances for the asg"
+}
+
+variable "certificate_arn" {
+  type        = string
+  description = "ARN of the string for the HTTPS"
+  default     = ""
+  validation {
+    condition     = var.protocol != "HTTPS" || (var.protocol == "HTTPS" && var.certificate_arn != "")
+    error_message = "You must provide a valid certificate_arn when protocol is HTTPS."
+  }
+}
+
+variable "path" {
+  default     = "/"
+  type        = string
+  description = "Path fo the health check"
+}
+
+variable "port_tg" {
+  description = "Port of the target group"
+  type        = number
+}
+
+variable "bucket_id" {
+  type        = string
+  description = "Name of the bucket to store logs in"
+}
+
+variable "bucket_prefix" {
+  type        = string
+  description = "Name of the folder to store the logs"
+}
+
+variable "protocol_tg" {
+  type = string
+  description = "Protocol of the tg"
+}
