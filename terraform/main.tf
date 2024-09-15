@@ -254,13 +254,13 @@ module "security_group_servers" {
       from_port                    = 22
       to_port                      = 22
     },
-    # {
-    #   description = "Allow Redis traffic"
-    #   cidr_ipv4   = "0.0.0.0/0"
-    #   ip_protocol = "tcp"
-    #   from_port   = aws_elasticache_cluster.redis.cache_nodes[0].port
-    #   to_port     = aws_elasticache_cluster.redis.cache_nodes[0].port
-    # }
+    {
+      description = "Allow Redis traffic"
+      cidr_ipv4   = "0.0.0.0/0"
+      ip_protocol = "tcp"
+      from_port   = aws_elasticache_cluster.redis.cache_nodes[0].port
+      to_port     = aws_elasticache_cluster.redis.cache_nodes[0].port
+    }
   ]
   egress_rules = [
     {
@@ -461,7 +461,7 @@ module "nlb_mongodb" {
   bucket_id          = aws_s3_bucket.elb_logs.id
   bucket_prefix      = "mongodb"
   instances_subnets  = module.private_subnets_L2.subnet_ids
-  depends_on         = [aws_s3_bucket_policy.allow_elb_logging]
+  depends_on         = [aws_s3_bucket_policy.allow_elb_logging, module.nat_gateway]
 }
 
 data "aws_route53_zone" "chinmayyy" {

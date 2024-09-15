@@ -3,13 +3,14 @@ export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update >> /dev/null
 sudo apt-get install gnupg curl
 sudo apt-get install -y amazon-efs-utils
-sudo apt-get install -y mongodb-org
 mount -t efs ${efs_file_system_id_placeholder}:/ /var/lib/mongodb
 echo "${efs_file_system_id_placeholder}:/ /var/lib/mongodb efs defaults,_netdev 0 0" >> /etc/fstab
 curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
    sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
    --dearmor
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+sudo apt-get update >> /dev/null
+sudo apt-get install -y mongodb-org
 echo "mongodb-org hold" | sudo dpkg --set-selections
 echo "mongodb-org-database hold" | sudo dpkg --set-selections
 echo "mongodb-org-server hold" | sudo dpkg --set-selections
