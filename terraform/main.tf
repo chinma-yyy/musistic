@@ -41,12 +41,12 @@ resource "aws_elasticache_subnet_group" "redis_subnets" {
 }
 
 resource "aws_elasticache_cluster" "redis" {
-  cluster_id      = "redis-rewind"
-  node_type       = "cache.t3.micro"
-  num_cache_nodes = 1
-  engine          = "redis"
-
-  subnet_group_name = aws_elasticache_subnet_group.redis_subnets.name
+  cluster_id         = "redis-rewind"
+  node_type          = "cache.t3.micro"
+  num_cache_nodes    = 1
+  engine             = "redis"
+  security_group_ids = [module.security_group_redis.security_group_id]
+  subnet_group_name  = aws_elasticache_subnet_group.redis_subnets.name
 }
 
 module "vpc" {
@@ -300,6 +300,32 @@ module "security_group_mongodb" {
       from_port                    = 22
       to_port                      = 22
     },
+  ]
+
+  egress_rules = [
+    {
+      description = "Allow all outbound traffic (IPv4)"
+      ip_protocol = "-1"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  ]
+}
+
+module "security_group_redis" {
+  source = "./modules/security-groups"
+  vpc_id = module.vpc.vpc_id
+  name   = "Security group for redis rewind"
+
+  ingress_rules = [
+    {
+      description                  = "Allow redis access for servers"
+      ip_protocol                  = "tcp"
+      from_port                    = aws_elasticache_cluster.redis.cache_nodes[0].port
+      to_port                      = aws_elasticache_cluster.redis.cache_nodes[0].port
+      referenced_security_group_id = module.security_group_servers.security_group_id
+    }
   ]
 
   egress_rules = [
