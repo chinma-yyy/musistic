@@ -8,11 +8,11 @@ function Login() {
   useRedirectAuthenticated()
 
   return (
-    <div className='h-screen w-screen  bg-rewind-dark-primary flex items-center justify-center flex-col'>
-      <img src={SpotifySVG} className='h-48' />
+    <div className="h-screen w-screen  bg-rewind-dark-primary flex items-center justify-center flex-col">
+      <img src={SpotifySVG} className="h-48" />
 
       <a href={redirectURL}>
-        <button className='border border-rewind-dark-tertiary rounded-full px-6 py-2 text-2xl text-white mt-4 hover:bg-gray-200 hover:text-rewind-dark-primary font-manrope  tracking-wide transition-colors'>
+        <button className="border border-rewind-dark-tertiary rounded-full px-6 py-2 text-2xl text-white mt-4 hover:bg-gray-200 hover:text-rewind-dark-primary font-manrope  tracking-wide transition-colors">
           Login w/ Spotify →
         </button>
       </a>

@@ -77,21 +77,19 @@ export const pushMessage = async (
 				],
 			});
 			await newMessage.save();
-			await conversationModel
-				.findByIdAndUpdate(conversation._id, {
-					$push: {
-						messages: newMessage._id,
-					},
-				})
+			await conversationModel.findByIdAndUpdate(conversation._id, {
+				$push: {
+					messages: newMessage._id,
+				},
+			});
 			length = 0;
 			messageId = newMessage._id;
 		} else {
 			messageId = conversation.messages[length - 1];
 		}
-		await messageModel
-			.findByIdAndUpdate(messageId, {
-				$push: { messages: message },
-			})
+		await messageModel.findByIdAndUpdate(messageId, {
+			$push: { messages: message },
+		});
 		await conversationModel.findByIdAndUpdate(conversation._id, {
 			$set: {
 				lastMessage: message.message,

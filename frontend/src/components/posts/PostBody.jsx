@@ -9,21 +9,21 @@ function PostBody({ post, redirect = true }) {
 
   const body = (
     <>
-      <div className='mt-4'>
-        <p className='text-poppins text-gray-200 text-lg'>{post?.text}</p>
+      <div className="mt-4">
+        <p className="text-poppins text-gray-200 text-lg">{post?.text}</p>
         {fileType === 'images' && (
-          <div className='w-full max-h-80 bg-rewind-dark-primary flex items-center justify-center'>
+          <div className="w-full max-h-80 bg-rewind-dark-primary flex items-center justify-center">
             <img
               src={
                 import.meta.env.VITE_API_ENDPOINT + '/media/' + post?.filepath
               }
-              alt='post'
-              className='max-h-80 rounded w-fit'
+              alt="post"
+              className="max-h-80 rounded w-fit"
             />
           </div>
         )}
         {fileType === 'videos' && (
-          <div className='w-full h-full bg-rewind-dark-primary flex items-center justify-center video-player px-4 py-2'>
+          <div className="w-full h-full bg-rewind-dark-primary flex items-center justify-center video-player px-4 py-2">
             <VideoPlayer
               src={
                 import.meta.env.VITE_API_ENDPOINT + '/media/' + post?.filepath
@@ -32,7 +32,7 @@ function PostBody({ post, redirect = true }) {
           </div>
         )}
         {fileType === 'audios' && (
-          <div className='w-full h-full bg-rewind-dark-primary flex items-center justify-center video-player px-4 py-2'>
+          <div className="w-full h-full bg-rewind-dark-primary flex items-center justify-center video-player px-4 py-2">
             <AudioPlayer
               src={
                 import.meta.env.VITE_API_ENDPOINT + '/media/' + post?.filepath

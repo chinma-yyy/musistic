@@ -18,12 +18,12 @@ function Bio({ user, isMe, refresh }) {
 
   const { sendRequest } = useHttpClient()
 
-  const followHandler = async follow => {
+  const followHandler = async (follow) => {
     if (follow) {
       try {
         const res = await sendRequest('/user/follow?id=' + user._id)
         setIsFollower(true)
-        setFollowerCount(f => f + 1)
+        setFollowerCount((f) => f + 1)
       } catch (err) {
         console.log(err)
       }
@@ -31,7 +31,7 @@ function Bio({ user, isMe, refresh }) {
       try {
         const res = await sendRequest('/user/unfollow?id=' + user._id)
         setIsFollower(false)
-        setFollowerCount(f => f - 1)
+        setFollowerCount((f) => f - 1)
       } catch (err) {
         console.log(err)
       }
@@ -40,14 +40,14 @@ function Bio({ user, isMe, refresh }) {
 
   const followUnfollow = isFollower ? (
     <button
-      className='ml-6 border h-fit border-rewind-dark-tertiary px-3 py-2 max-h-auto rounded font-manrope text-sm inline-block'
+      className="ml-6 border h-fit border-rewind-dark-tertiary px-3 py-2 max-h-auto rounded font-manrope text-sm inline-block"
       onClick={() => followHandler(false)}
     >
       following
     </button>
   ) : (
     <button
-      className='ml-6 border h-fit border-rewind-dark-tertiary px-3 py-2 max-h-auto rounded font-manrope text-sm inline-block'
+      className="ml-6 border h-fit border-rewind-dark-tertiary px-3 py-2 max-h-auto rounded font-manrope text-sm inline-block"
       onClick={() => followHandler(true)}
     >
       follow
@@ -56,8 +56,8 @@ function Bio({ user, isMe, refresh }) {
 
   return (
     <>
-      <div className='ml-8 mt-8 md:m-0 md:mt-4 md:w-2/3 '>
-        <div className='text-xl font-bold font-roboto flex flex-wrap '>
+      <div className="ml-8 mt-8 md:m-0 md:mt-4 md:w-2/3 ">
+        <div className="text-xl font-bold font-roboto flex flex-wrap ">
           <div>
             {user?.name}{' '}
             {/* {user?.following && (
@@ -65,13 +65,13 @@ function Bio({ user, isMe, refresh }) {
                 follows you
               </span>
             )} */}
-            <div className='text-sm text-gray-300 font-manrope'>
+            <div className="text-sm text-gray-300 font-manrope">
               @{user?.username}
             </div>
           </div>
           {isMe ? (
             <button
-              className='ml-6 border h-fit border-rewind-dark-tertiary px-3 py-2 max-h-auto rounded font-manrope text-sm inline-block cursor-pointer'
+              className="ml-6 border h-fit border-rewind-dark-tertiary px-3 py-2 max-h-auto rounded font-manrope text-sm inline-block cursor-pointer"
               onClick={() => setEditing(true)}
             >
               edit
@@ -80,22 +80,22 @@ function Bio({ user, isMe, refresh }) {
             followUnfollow
           )}
         </div>
-        <div className='mt-2 font-manrope text-sm flex'>
-          <div className='mr-3'>
-            <span className='font-bold'>{followerCount}</span> followers
+        <div className="mt-2 font-manrope text-sm flex">
+          <div className="mr-3">
+            <span className="font-bold">{followerCount}</span> followers
           </div>
           <div>
-            <span className='font-bold'>{user?.followingCount}</span> following
+            <span className="font-bold">{user?.followingCount}</span> following
           </div>
         </div>
-        <div className='mt-2 font-poppins text-md '>{user?.bio}</div>
-        <div className='text-gray-500 italic font-manrope text-sm mt-2'>
+        <div className="mt-2 font-poppins text-md ">{user?.bio}</div>
+        <div className="text-gray-500 italic font-manrope text-sm mt-2">
           {user?.ai}
         </div>
-        <div className='mt-2 text-base font-manrope text-rewind-primay'>
+        <div className="mt-2 text-base font-manrope text-rewind-primay">
           {user?.aiGeneratedLine}
         </div>
-        <div className='mt-2 text-sm font-manrope'>Joined {joinedYear}</div>
+        <div className="mt-2 text-sm font-manrope">Joined {joinedYear}</div>
       </div>
       {editing && (
         <Edit user={user} setEditing={setEditing} refresh={refresh} />

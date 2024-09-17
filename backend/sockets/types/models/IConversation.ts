@@ -1,6 +1,5 @@
-import { Types }  from "mongoose";
+import { Types } from "mongoose";
 import mongoose from "mongoose";
-
 
 export interface IConversation {
 	_id: Types.ObjectId;

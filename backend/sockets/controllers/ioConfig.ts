@@ -75,7 +75,7 @@ export const ioConfig = (
 				type: string;
 				_v: string;
 			};
-			chatSocket(socket, decoded.id,io);
+			chatSocket(socket, decoded.id, io);
 		} catch (err) {
 			console.log("Unauthorized");
 		}

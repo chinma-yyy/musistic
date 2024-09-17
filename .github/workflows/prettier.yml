@@ -23,3 +23,9 @@ jobs:
           cd backend
           npm install -g prettier
           prettier --check "**/*.ts"
+
+      - name: Check code formatting Frontend
+        run: |
+          cd frontend
+          npm install -g prettier
+          prettier --check "**/*.jsx"

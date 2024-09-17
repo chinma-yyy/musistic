@@ -183,7 +183,7 @@ export const getMe: RequestHandler = async (req: Authenticated, res, next) => {
 			.findById(userId)
 			.populate("spotifyData")
 			.populate("lastNotif");
-		const notificationKey = `notification:unseen:${userId}`
+		const notificationKey = `notification:unseen:${userId}`;
 		const notificationCount = await client.lLen(notificationKey);
 		const messageCount = await conversationModel
 			.find({ by: { $ne: user?._id }, seen: false })

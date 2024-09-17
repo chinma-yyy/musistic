@@ -13,7 +13,7 @@ function SearchUser({ onClose }) {
 
   let timerId = null
 
-  const handleSearch = async e => {
+  const handleSearch = async (e) => {
     setSearchInitiated(true)
 
     const { value } = e.target
@@ -27,14 +27,14 @@ function SearchUser({ onClose }) {
   }
 
   return (
-    <Modal onClose={onClose} title='Search User' showActions={false}>
+    <Modal onClose={onClose} title="Search User" showActions={false}>
       <input
-        type='text'
-        placeholder='Search User'
-        className='
+        type="text"
+        placeholder="Search User"
+        className="
         w-full  bg-rewind-dark-primary text-poppins text-gray-200 text-md border border-rewind-dark-tertiary rounded-md p-2
-      '
-        onChange={e => {
+      "
+        onChange={(e) => {
           clearTimeout(timerId)
           timerId = setTimeout(() => {
             handleSearch(e)
@@ -42,7 +42,7 @@ function SearchUser({ onClose }) {
         }}
       />
       {isLoading && (
-        <div className='p-4 text-poppins text-gray-200 text-xl  border-rewind-dark-tertiary'>
+        <div className="p-4 text-poppins text-gray-200 text-xl  border-rewind-dark-tertiary">
           Loading...
         </div>
       )}
@@ -51,19 +51,19 @@ function SearchUser({ onClose }) {
           {/* <div className='p-4 text-poppins text-gray-200 text-xl  border-rewind-dark-tertiary'>
             Users ⇣
           </div> */}
-          {users.map(user => {
+          {users.map((user) => {
             return (
               <User
                 user={user}
                 key={user?._id}
-                select={userId => {
+                select={(userId) => {
                   onClose(userId)
                 }}
               />
             )
           })}
           {!serachInitiated && (
-            <div className='p-4 text-poppins text-gray-200 text-xl  border-rewind-dark-tertiary'>
+            <div className="p-4 text-poppins text-gray-200 text-xl  border-rewind-dark-tertiary">
               Start typing to search..
             </div>
           )}

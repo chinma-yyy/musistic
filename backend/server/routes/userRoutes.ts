@@ -7,7 +7,10 @@ import {
 	usernameUnique,
 } from "../controllers/users";
 import { isAuth } from "../middlewares/auth";
-import { getAllNotifications, getUnseenNotifications } from "../services/notifications";
+import {
+	getAllNotifications,
+	getUnseenNotifications,
+} from "../services/notifications";
 
 const userRouter = express.Router();
 
