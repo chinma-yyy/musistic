@@ -18,20 +18,8 @@ jobs:
           fetch-depth: 0
       - name: Test locatons
         run: ls -la
-      - name: Prettify code Backend
-        uses: creyD/prettier_action@v4.3
-        with:
-          # This part is also where you can pass other options, for example:
-          working_directory: backend/
-          prettier_options: --write **/*.ts
-          only_changed: True
-          same_commit: True
-
-      - name: Prettify code Frontend
-        uses: creyD/prettier_action@v4.3
-        with:
-          # This part is also where you can pass other options, for example:
-          working-directory: frontend
-          prettier_options: --write **/*.{js,jsx}
-          only_changed: True
-          same_commit: True
+      - name: Check code formatting Backend
+        run: |
+          cd backend
+          npm install -g prettier
+          prettier --check "**/*.ts"
