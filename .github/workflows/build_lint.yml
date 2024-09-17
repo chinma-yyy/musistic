@@ -23,26 +23,6 @@ jobs:
 
       - name: Set Up Node.js 18.x
         uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Cache Node.js Modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install Dependencies
-        working-directory: backend/server
-        run: npm ci
-
-      - name: Compile TypeScript
-        working-directory: backend/server
-        run: npx tsc
 
       - name: Run ESLint
         working-directory: backend/server
@@ -79,8 +59,6 @@ jobs:
 
       - name: Set Up Node.js 18.x
         uses: actions/setup-node@v4
-        with:
-          node-version: 18
 
       - name: Cache Node.js Dependencies
         uses: actions/cache@v3

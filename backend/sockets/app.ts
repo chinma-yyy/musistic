@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.set("trust proxy", true);
 
-app.use("/notification", notificationController);
+app.use("/socket.io/notification", notificationController);
 
 app.use("/test", (req, res, next) => {
 	console.log("Here");
