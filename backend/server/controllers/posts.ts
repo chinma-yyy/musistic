@@ -45,10 +45,8 @@ export const createPost: RequestHandler = async (
 	next,
 ) => {
 	try {
-		console.log(req.body);
 		const userId = req.user?.id as string;
 		const text = req.body?.text;
-		console.log(text);
 		const dedicated =
 			req.body?.dedicated === undefined
 				? undefined
@@ -68,8 +66,8 @@ export const createPost: RequestHandler = async (
 			return res.status(201).json({ message: "Post reshared" });
 		}
 		// If file is uploaded then save the path of the file in db
-		if (req.body.filename && req.body.fileType) {
-			filepath = req.body.fileType + "/" + req.body.filename;
+		if (req.body.fileName) {
+			filepath = req.body.fileName;
 		}
 		// If nothing is provided then return error
 		if (!text && !dedicated && !filepath && !reshared) {
