@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  # Job 1: Linting
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display Context Info
+        run: |
+          echo "🎉 The job was triggered by a ${{ github.event_name }} event."
+          echo "🐧 Running on ${{ runner.os }} server hosted by GitHub!"
+          echo "🔎 Branch: ${{ github.ref }} | Repository: ${{ github.repository }}"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set Up Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache Node.js Modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        working-directory: backend/server
+        run: npm ci
+
+      - name: Compile TypeScript
+        working-directory: backend/server
+        run: npx tsc
+
+      - name: Run ESLint
+        working-directory: backend/server
+        run: npx eslint .
+
+      - name: Install Prettier
+        run: npm install -g prettier
+
+      - name: Check Formatting Backend
+        run: |
+          cd backend
+          prettier --check "**/*.ts"
+
+      - name: Check Formatting Frontend
+        run: |
+          cd frontend
+          prettier --check "**/*.jsx"
+
+  # Job 2: Build
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Display Context Info
+        run: |
+          echo "🎉 The job was triggered by a ${{ github.event_name }} event."
+          echo "🐧 Running on ${{ runner.os }} server hosted by GitHub!"
+          echo "🔎 Branch: ${{ github.ref }} | Repository: ${{ github.repository }}"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set Up Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache Node.js Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies Backend
+        working-directory: backend/server
+        run: |
+          npm ci
+          npm install -g typescript
+
+      - name: Build Backend
+        working-directory: backend/server
+        run: tsc
+
+      - name: Install Dependencies Frontend
+        working-directory: frontend/
+        run: |
+          npm install -g yarn
+          yarn
+
+      - name: Build Frontend
+        working-directory: frontend/
+        run: yarn build
+
+      - name: Build Complete
+        run: echo "✅ Build completed successfully!"
