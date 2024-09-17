@@ -1,7 +1,8 @@
-import { Socket } from "socket.io";
 import conversationModel from "../models/conversationSchema";
 import { pushMessage } from "../services/conversations";
-
+import { getUserSocketIdFromRedis } from "./ioConfig";
+import { Server, Socket } from "socket.io";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 function createTime(): any {
 	const d = new Date();
 	let hours = d.getUTCHours();
@@ -14,7 +15,11 @@ function createTime(): any {
 	return timeString;
 }
 
-export function chatSocket(socket: Socket, userId: string): void {
+export function chatSocket(
+	socket: Socket,
+	userId: string,
+	io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
+): void {
 	/*
 	On conversation start event we add users to the room with the conversationId
 	
@@ -43,8 +48,6 @@ export function chatSocket(socket: Socket, userId: string): void {
 		}
 	*/
 	socket.on("typing", (event) => {
-		// console.log("typing");
-		// console.log(event.text);
 		socket.in(event.room).emit("typing", userId);
 	});
 	/* 
@@ -74,6 +77,19 @@ export function chatSocket(socket: Socket, userId: string): void {
 						message: event.message.text,
 						timestamp: timestamp,
 					});
+					const recipient =
+						conversation?.participants[0].toString() == userId
+							? conversation.participants[1]
+							: conversation!.participants[0];
+					const isConnected = await getUserSocketIdFromRedis(
+						recipient.toString(),
+					);
+					const notInRoom = true;
+					if (isConnected && notInRoom) {
+						console.log("send");
+						console.log(isConnected);
+						io.to(isConnected).emit("new-message");
+					}
 				});
 		} catch (err) {
 			console.log(err);
@@ -85,6 +101,7 @@ export function chatSocket(socket: Socket, userId: string): void {
 			},
 			userId: userId,
 		});
+		socket.rooms;
 	});
 
 	socket.on("leave", async (event) => {

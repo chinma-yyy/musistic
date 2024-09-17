@@ -4,7 +4,8 @@ import { NotificationTypes } from "../enums/notificationEnums";
 import client from "../redis";
 import { Authenticated } from "../types/declarations/jwt";
 import { RequestHandler } from "express";
-
+import axios from "axios";
+const socketServerURL = process.env.SOCKET_SERVER_URL;
 /**
  *
  * @param recipient person receiving notif
@@ -74,6 +75,9 @@ export const sendNotification = async (
 
 		// Store the populated notification data in Redis
 		await client.lPush(notificationKey, JSON.stringify(notificationData));
+		axios.get(
+			`${socketServerURL}/notification?recipient=${recipient}`,
+		);
 		return true;
 	} catch (err) {
 		console.log(err);

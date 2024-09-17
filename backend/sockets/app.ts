@@ -4,6 +4,7 @@ import express from "express";
 import { config } from "dotenv";
 import mongoose from "mongoose";
 import { ioConfig } from "./controllers/ioConfig";
+import { notificationController } from "./controllers/notification";
 
 config();
 
@@ -14,6 +15,8 @@ const env = process.env.NODE_ENV;
 app.use(express.json());
 
 app.set("trust proxy", true);
+
+app.use("/notification", notificationController);
 
 app.use("/test", (req, res, next) => {
 	console.log("Here");

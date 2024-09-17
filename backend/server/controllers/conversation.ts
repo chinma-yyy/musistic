@@ -57,7 +57,8 @@ export const userConvos: RequestHandler = async (
 		const userId = req.user?.id;
 		const conversations = await conversationModel
 			.find({ participants: { $in: [userId] } })
-			.populate("participants");
+			.populate("participants")
+			.sort({ updatedAt: -1 });
 		res.status(200).json({ conversations });
 	} catch (err) {
 		next(new IError("Couldnt search for user conversations", 500));

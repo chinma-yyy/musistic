@@ -77,7 +77,6 @@ export default function CreatePost({ fetchPosts, profileUrl, replyTo = null }) {
 
     try {
       const response = await sendRequest('/posts/create', 'POST', body, {})
-
       fetchPosts()
       reset()
     } catch (err) {

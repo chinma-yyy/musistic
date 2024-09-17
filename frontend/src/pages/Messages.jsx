@@ -45,7 +45,7 @@ function Messages() {
         if (conversation?.name) {
           return
         }
-
+        console.log(conversation.by)
         conversation?.participants?.forEach((participant) => {
           if (
             participant._id === user._id ||
@@ -123,7 +123,7 @@ function Messages() {
                   <div className="text-lg font-semibold">
                     {conversation?.name}
                   </div>
-                  {conversation?.seen ? (
+                  {conversation?.by == user._id || conversation.seen ? (
                     <div className="font-manrope text-base">
                       {conversation?.lastMessage}
                     </div>

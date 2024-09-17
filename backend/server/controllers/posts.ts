@@ -45,8 +45,10 @@ export const createPost: RequestHandler = async (
 	next,
 ) => {
 	try {
+		console.log(req.body);
 		const userId = req.user?.id as string;
 		const text = req.body?.text;
+		console.log(text);
 		const dedicated =
 			req.body?.dedicated === undefined
 				? undefined
@@ -390,7 +392,7 @@ async function resharePost(
 				resharedBy: user._id,
 			});
 		}
-		
+
 		// Send notification for reshare
 		await sendNotification(
 			post?.user,

@@ -36,7 +36,7 @@ export default function Sidebar() {
       <div className="w-2/5 h-screen hidden lg:block fixed right-0 top-0">
         <aside className="flex w-full h-full bg-rewind-dark-primary flex-col items-end border-l border-rewind-dark-tertiary">
           <div className="w-full  flex items-center justify-center p-4 ">
-            {user?.spotifyData?.accessToken && (
+            {/* {user?.spotifyData?.accessToken && (
               <SpotifyPlayer
                 ref={playerRef}
                 styles={{
@@ -47,7 +47,7 @@ export default function Sidebar() {
                 token={user?.spotifyData?.accessToken}
                 uris={['spotify:track:2pUpNOgJBIBCcjyQZQ00qU']}
               />
-            )}
+            )} */}
           </div>
           <div className="w-full mt-4">
             <div>

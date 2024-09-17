@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { authContext } from '../../store/authContext'
@@ -9,9 +9,36 @@ import messages from './icons/messages.svg'
 import profile from './icons/profile.svg'
 import voice from './icons/voice.svg'
 import notif from './icons/notif.svg'
+import { mainSocket } from '../../socket'
 
 export default function Sidebar({ user, setShowBot }) {
   const { logout } = useContext(authContext)
+  const [nC, setNc] = useState(user?.notifCount)
+  const [mC, setMc] = useState(user?.messageCount)
+
+  useEffect(() => {
+    mainSocket.connect(() => {
+      console.log('connected to main socket')
+    })
+
+    mainSocket.on('notif', (event) => {
+      let notifCount = nC + 1
+      setNc(notifCount)
+    })
+
+    mainSocket.on('new-message', (event) => {
+      let messageCount = mC + 1
+      setMc(messageCount)
+    })
+  }, [nC, mC])
+
+  useEffect(() => {
+    setNc(user?.notifCount)
+  }, [user?.notifCount])
+
+  useEffect(() => {
+    setMc(user?.messageCount)
+  }, [user?.messageCount])
 
   return (
     <>
@@ -62,13 +89,16 @@ export default function Sidebar({ user, setShowBot }) {
               <li>
                 <Link
                   to="/notifications"
+                  onClick={() => {
+                    setNc(0)
+                  }}
                   className="w-full h-10 flex items-center my-2 text text-xl hover:text-rewind-secondary"
                 >
                   <div className="relative">
                     <img src={notif} className="h-6" />
-                    {user?.notifCount > 0 && (
+                    {nC > 0 && (
                       <div class="absolute inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-rewind-secondary border-2 border-white rounded-full -top-2 -right-2 dark:border-gray-900">
-                        {user?.notifCount}
+                        {nC}
                       </div>
                     )}
                   </div>
@@ -79,13 +109,16 @@ export default function Sidebar({ user, setShowBot }) {
               <li>
                 <Link
                   to="/messages"
+                  onClick={() => {
+                    setMc(0)
+                  }}
                   className="w-full h-10 flex items-center my-2 text text-xl hover:text-rewind-secondary"
                 >
                   <div className="relative">
                     <img src={messages} className="h-6" />
-                    {user?.messageCount > 0 && (
+                    {mC > 0 && (
                       <div class="absolute inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-rewind-secondary border-2 border-white rounded-full -top-2 -right-2 dark:border-gray-900">
-                        {user?.messageCount}
+                        {mC}
                       </div>
                     )}
                   </div>

@@ -6,11 +6,6 @@ resource "aws_s3_bucket" "elb_logs" {
   bucket = "logs-rewind"
 }
 
-# resource "aws_s3_bucket_acl" "elb_logs_acl" {
-#   bucket = aws_s3_bucket.elb_logs.id
-#   acl    = "private"
-# }
-
 data "aws_iam_policy_document" "allow_elb_logging" {
   statement {
     effect = "Allow"
@@ -610,7 +605,7 @@ resource "aws_secretsmanager_secret_version" "server_secret_update" {
         MONGO_URL  = "mongodb://admin:Password%40123@${module.nlb_mongodb.dns_name}:27017/",
         REDIS_HOST = "${aws_elasticache_cluster.redis.cache_nodes[0].address}",
         REDIS_PORT = "${aws_elasticache_cluster.redis.cache_nodes[0].port}",
-        REDIS_TLS  = "true"
+        REDIS_TLS  = "false"
       }
     )
   )

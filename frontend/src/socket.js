@@ -11,7 +11,7 @@ export const chatSocket = io(import.meta.env.VITE_SOCKET_ENDPOINT + '/chat', {
   },
 })
 
-export const musicSocket = io(import.meta.env.VITE_SOCKET_ENDPOINT + '/music', {
+export const mainSocket = io(import.meta.env.VITE_SOCKET_ENDPOINT, {
   autoConnect: false,
   extraHeaders: {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
