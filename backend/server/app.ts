@@ -73,12 +73,15 @@ app.use((error: IError, req: Request, res: Response, next: NextFunction) => {
 
 const server = http.createServer(app);
 
-const mongoUrl = process.env.MONGO_URL!;
+const mongoUrl =
+	process.env.NODE_ENV == "test"
+		? process.env.MONGO_URL + "rewind-test"
+		: process.env.MONGO_URL;
 
 server.listen(port, async () => {
 	console.log("Server started on port " + port);
 	mongoose
-		.connect(mongoUrl)
+		.connect(mongoUrl!)
 		.then(() => {
 			console.log("Connected to mongo db");
 		})

@@ -28,9 +28,9 @@ export const fileUpload: RequestHandler = (req, res, next) => {
 		}
 
 		if (!req.file) {
-			next();
+			return next();
 		}
-
+		return next();
 		try {
 			// Define S3 upload parameters
 			//@ts-ignore
