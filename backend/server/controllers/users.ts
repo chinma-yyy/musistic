@@ -47,20 +47,23 @@ export const followUser: RequestHandler = async (
 	res,
 	next,
 ) => {
-	const followerId = req.user?.id;
-	const following = req.query.id;
-	// Return if follow for self
-	if (followerId === following) {
-		return next(new IError("Cannot follow self", statusCode.BAD_REQUEST));
-	}
-	// check if already followed
-	const followed = await userModel
-		.findById(following)
-		.populate({ path: "followers", match: { users: followerId } });
-	if (followed?.followers) {
-		return next(new IError("Already followed", statusCode.BAD_REQUEST));
-	}
 	try {
+		const followerId = req.user?.id;
+		const following = req.query.id;
+		// Return if follow for self
+		if (followerId === following) {
+			return next(
+				new IError("Cannot follow self", statusCode.BAD_REQUEST),
+			);
+		}
+		// check if already followed
+		const followed = await userModel
+			.findById(following)
+			.populate({ path: "followers", match: { users: followerId } });
+		if (followed?.followers) {
+			return next(new IError("Already followed", statusCode.BAD_REQUEST));
+		}
+
 		await Promise.all([
 			//Add in following of follower
 			userModel

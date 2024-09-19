@@ -66,9 +66,8 @@ export const sendNotification = async (
 			post: postId,
 		});
 		await notification.save();
-		const populatedNotification = await notification.populate(
-			"sender recipient",
-		);
+		const populatedNotification =
+			await notification.populate("sender recipient");
 
 		const notificationKey = `notification:unseen:${recipient}`;
 		const notificationData = populatedNotification.toObject();
@@ -76,7 +75,9 @@ export const sendNotification = async (
 		// Store the populated notification data in Redis
 		await client.lPush(notificationKey, JSON.stringify(notificationData));
 		try {
-			axios.get(`${socketServerURL}/socket.io/notification?recipient=${recipient}`);
+			axios.get(
+				`${socketServerURL}/socket.io/notification?recipient=${recipient}`,
+			);
 		} catch (error) {}
 		return true;
 	} catch (err) {
