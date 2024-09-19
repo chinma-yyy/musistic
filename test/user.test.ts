@@ -4,7 +4,7 @@ import axios from "axios";
 import fs from "fs/promises"; // Import fs.promises for async readFile
 
 let dbjson: any;
-
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 describe("For users", () => {
 	let authToken: string;
 	let Headers: object;
@@ -28,6 +28,7 @@ describe("For users", () => {
 	});
 
 	test("should update user details", async () => {
+		await sleep(1000);
 		try {
 			const user = await axios.post(
 				`${baseUrl}/update`,
@@ -54,6 +55,7 @@ describe("For users", () => {
 	});
 
 	test("should follow user", async () => {
+		await sleep(1000);
 		const follow = await axios.get(
 			`${baseUrl}/follow?id=${dbjson.users.user1._id}`,
 			Headers,
@@ -65,6 +67,7 @@ describe("For users", () => {
 	});
 
 	test("should throw error on self follow", async () => {
+		await sleep(1000);
 		try {
 			const follow = await axios.get(
 				`${baseUrl}/follow?id=${dbjson.users.user2._id}`,
@@ -88,6 +91,7 @@ describe("For users", () => {
 	});
 
 	test("should unfollow user", async () => {
+		await sleep(1000);
 		try {
 			const follow = await axios.get(
 				`${baseUrl}/unfollow?id=${dbjson.users.user1._id}`,
@@ -108,6 +112,7 @@ describe("For users", () => {
 	});
 
 	test("should throw error on self unfollow", async () => {
+		await sleep(1000);
 		try {
 			const follow = await axios.get(
 				`${baseUrl}/unfollow?id=${dbjson.users.user2._id}`,
@@ -131,6 +136,7 @@ describe("For users", () => {
 	});
 
 	test("should get the me user details", async () => {
+		await sleep(1000);
 		try {
 			const me = await axios.get(`${baseUrl}/me`, Headers);
 
@@ -180,6 +186,7 @@ describe("For users", () => {
 	});
 
 	test("should check if username is unique", async () => {
+		await sleep(1000);
 		try {
 			const username = await axios.get(
 				`${baseUrl}/username?username=new_username`,
@@ -202,6 +209,7 @@ describe("For users", () => {
 	});
 
 	test("should throw error on a not unique username", async () => {
+		await sleep(1000);
 		try {
 			const username = await axios.get(
 				`${baseUrl}/username?username=chinmayshewale`,
@@ -225,6 +233,7 @@ describe("For users", () => {
 	});
 
 	test("should update user details", async () => {
+		await sleep(1000);
 		try {
 			const user = await axios.post(
 				`${baseUrl}/update`,
