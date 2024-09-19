@@ -1,1 +1,0 @@
-docker run --name front -p 5173:3000 frontendapp

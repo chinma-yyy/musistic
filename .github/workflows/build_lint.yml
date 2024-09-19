@@ -21,7 +21,7 @@ jobs:
               with:
                   fetch-depth: 1
 
-            - name: Set Up Node.js 18.x
+            - name: Set Up Node.js 20.x
               uses: actions/setup-node@v4
 
             - name: Install dependencies
@@ -63,7 +63,7 @@ jobs:
               with:
                   fetch-depth: 1
 
-            - name: Set Up Node.js 18.x
+            - name: Set Up Node.js 20.x
               uses: actions/setup-node@v4
 
             - name: Cache Node.js Dependencies

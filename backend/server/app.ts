@@ -80,6 +80,7 @@ const mongoUrl =
 
 server.listen(port, async () => {
 	console.log("Server started on port " + port);
+	console.log(mongoUrl);
 	mongoose
 		.connect(mongoUrl!)
 		.then(() => {

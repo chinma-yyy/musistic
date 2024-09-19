@@ -50,7 +50,6 @@ export const userByFields: RequestHandler = async (
 	next,
 ) => {
 	try {
-		console.log(req.query);
 		const username = req.query.username;
 		const userId = req.query.userId;
 		const email = req.query.email;
@@ -61,7 +60,6 @@ export const userByFields: RequestHandler = async (
 			})
 			.populate({ path: "followers", match: { users: req.user?.id } })
 			.populate({ path: "spotifyData" });
-
 		if (req.user?.id) {
 			if (req.user.id === user?._id.toString()) {
 				isMe = true;
@@ -70,7 +68,9 @@ export const userByFields: RequestHandler = async (
 		const track = await getUserTopTrack("short_term", 1, user?.spotifyData);
 		// Change frontend for the object changes here and then delete this comment
 		//@ts-ignore
-		res.status(200).json({ ...user?._doc, isMe, track: track });
+		const obj = { ...user._doc, isMe, track };
+		console.log(obj);
+		res.status(200).json(obj);
 	} catch (err) {
 		next(
 			new IError("Error fetching User", statusCode.INTERNAL_SERVER_ERROR),
