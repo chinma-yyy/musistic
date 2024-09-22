@@ -1,34 +1,60 @@
 name: Commit Message Checker
 
 on:
-    push:
-        branches:
-            - dev
+  push:
+    branches:
+      - dev
 
 jobs:
-    run-terraform_test:
-        runs-on: ubuntu-latest
+  run-terraform_test:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
-            - name: HashiCorp - Setup Terraform
-              uses: hashicorp/setup-terraform@v3.1.2
-            - name: Init and plan
-              working-directory: terraform/state
-              env:
-                  AWS_SECRET_KEY: ${{secrets.AWS_ACCESS_KEY_ID}}
-                  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-                  AWS_REGION: ${{secrets.AWS_REGION}}
-              run: |
-                  terraform init
-                  terraform plan
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+      
+      # Step: Check if AWS environment variables are available (without exposing sensitive data)
+      - name: Check AWS Environment Variables
+        run: |
+          if [[ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]]; then
+            echo "AWS_ACCESS_KEY_ID is not set!"
+            exit 1
+          else
+            echo "AWS_ACCESS_KEY_ID is set."
+          fi
 
-            - name: Apply
-              working-directory: terraform/state
-              env:
-                  AWS_SECRET_KEY: ${{secrets.AWS_ACCESS_KEY_ID}}
-                  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-                  AWS_REGION: ${{secrets.AWS_REGION}}
-              run: |
-                  terraform apply -auto-approve
+          if [[ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]]; then
+            echo "AWS_SECRET_ACCESS_KEY is not set!"
+            exit 1
+          else
+            echo "AWS_SECRET_ACCESS_KEY is set."
+          fi
+
+          if [[ -z "${{ secrets.AWS_REGION }}" ]]; then
+            echo "AWS_REGION is not set!"
+            exit 1
+          else
+            echo "AWS_REGION is set."
+          fi
+
+      - name: Init and Plan Terraform
+        working-directory: terraform/state
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          terraform init
+          terraform plan
+
+      - name: Apply Terraform Changes
+        working-directory: terraform/state
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          terraform apply -auto-approve
