@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+    stages {
+        stage('Parallel Execution') {
+            parallel {
+                stage('Task Chain 1: Task 1 and Task 2') {
+                    stages {
+                        stage('Task 1') {
+                            steps {
+                                echo 'Running Task 1...'
+                                // Task 1 execution logic
+                            }
+                        }
+                        stage('Task 2') {
+                            steps {
+                                echo 'Running Task 2...'
+                                // Task 2 execution logic, dependent on Task 1
+                            }
+                        }
+                    }
+                }
+                stage('Task Chain 2: Task 3 and Task 4') {
+                    stages {
+                        stage('Task 3') {
+                            steps {
+                                echo 'Running Task 3...'
+                                // Task 3 execution logic
+                            }
+                        }
+                        stage('Task 4') {
+                            steps {
+                                echo 'Running Task 4...'
+                                // Task 4 execution logic, dependent on Task 3
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
