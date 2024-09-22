@@ -1,57 +1,53 @@
 name: Commit Message Checker
 
 on:
-    push:
-        branches:
-            - dev
+  push:
+    branches:
+      - dev
 
 jobs:
-    check-commit-message:
-        runs-on: ubuntu-latest
+  check-commit-message:
+    runs-on: ubuntu-latest
 
-        steps:
-            # Step 1: Checkout the repository
-            - name: Checkout code
-              uses: actions/checkout@v4
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            # Step 2: Get the last commit message
-            - name: Get commit message
-              id: get_commit_message
-              run: |
-                  COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-                  echo "Commit message: $COMMIT_MESSAGE"
-                  echo "::set-output name=message::$COMMIT_MESSAGE"
+      # Step 2: Get the last commit message
+      - name: Get commit message
+        id: get_commit_message
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MESSAGE"
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
 
-            # Step 3: Check the commit message and run respective commands
-            - name: Run specific commands based on commit message
-              id: run_based_on_commit_message
-              run: |
-                  COMMIT_MESSAGE="${{ steps.get_commit_message.outputs.message }}"
+      # Step 3: Check the commit message and run respective commands
+      - name: Run specific commands based on commit message
+        run: |
+          set -e
+          COMMIT_MESSAGE="${{ env.COMMIT_MESSAGE }}"
 
-                  # Define your trigger words
-                  if [[ "$COMMIT_MESSAGE" == jenkins:* ]]; then
-                    echo "Commit message starts with 'Jenkins'. Running Jenkins commands..."
-                    # Add commands to run when commit starts with 'Fix'
-                    # Example:
-                    echo "Running jenkinss commands..."
+          # Define your trigger words
+          if [[ "$COMMIT_MESSAGE" == jenkins:* ]]; then
+            echo "Commit message starts with 'Jenkins'. Running Jenkins commands..."
+            # Example Jenkins-related commands:
+            echo "Running Jenkins commands..."
 
-                  elif [[ "$COMMIT_MESSAGE" == deploy:* ]]; then
-                    echo "Commit message starts with 'Deploy'. Running Deploy commands..."
-                    # Add commands to run when commit starts with 'Feature'
-                    # Example:
-                    echo "Running deploy commands..."
+          elif [[ "$COMMIT_MESSAGE" == deploy:* ]]; then
+            echo "Commit message starts with 'Deploy'. Running Deploy commands..."
+            # Example Deploy-related commands:
+            echo "Running deploy commands..."
 
-                  elif [[ "$COMMIT_MESSAGE" == update:* ]]; then
-                    echo "Commit message starts with 'Update'. Running Update commands..."
-                    # Add commands to run when commit starts with 'Refactor'
-                    # Example:
-                    echo "Running update commands..."
+          elif [[ "$COMMIT_MESSAGE" == update:* ]]; then
+            echo "Commit message starts with 'Update'. Running Update commands..."
+            # Example Update-related commands:
+            echo "Running update commands..."
 
-                  elif [[ "$COMMIT_MESSAGE" == down:* ]]; then
-                    echo "Commit message starts with 'Down'. Running Down commands..."
-                    # Add commands to run when commit starts with 'Docs'
-                    # Example:
-                    echo "Running down commands..."
+          elif [[ "$COMMIT_MESSAGE" == down:* ]]; then
+            echo "Commit message starts with 'Down'. Running Down commands..."
+            # Example Down-related commands:
+            echo "Running down commands..."
 
-                  else
-                    echo "No matching commit message prefix. Skipping command execution."
+          else
+            echo "No matching commit message prefix. Skipping command execution."

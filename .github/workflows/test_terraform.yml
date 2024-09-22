@@ -16,11 +16,19 @@ jobs:
               uses: hashicorp/setup-terraform@v3.1.2
             - name: Init and plan
               working-directory: terraform/state
+              env:
+                  AWS_SECRET_KEY: ${{secrets.AWS_ACCESS_KEY_ID}}
+                  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+                  AWS_REGION: ${{secrets.AWS_REGION}}
               run: |
-               terraform init
-               terraform plan
+                  terraform init
+                  terraform plan
 
-            - name: Apply 
+            - name: Apply
               working-directory: terraform/state
+              env:
+                  AWS_SECRET_KEY: ${{secrets.AWS_ACCESS_KEY_ID}}
+                  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+                  AWS_REGION: ${{secrets.AWS_REGION}}
               run: |
-               terraform apply -auto-approve
+                  terraform apply -auto-approve
