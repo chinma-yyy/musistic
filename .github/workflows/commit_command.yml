@@ -3,7 +3,7 @@ name: Commit Message Checker
 on:
     push:
         branches:
-            - main
+            - dev
 
 jobs:
     check-commit-message:
